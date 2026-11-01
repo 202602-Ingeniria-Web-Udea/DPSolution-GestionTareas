@@ -8,7 +8,7 @@ front como en el back.
 
 Proyecto evaluativo · Ingeniería Web · Universidad de Antioquia.
 
-**🔗 Demo en vivo:** _(se agrega aquí una vez desplegado en Vercel)_
+**🔗 Demo en vivo:** [dpsolutions-gestiontareas.vercel.app](https://dpsolutions-gestiontareas.vercel.app/)
 
 ## 👥 Integrantes
 
@@ -159,3 +159,7 @@ la base del proyecto. Logo: monograma "DP" (`components/logo.tsx`).
   saldo actual la suma de todos los movimientos, y reproduciéndolos en
   orden cronológico — así el último punto siempre coincide con el saldo
   real.
+- `vercel.json` define un Cron Job (`/api/cron/keep-alive`) que se ejecuta
+  una vez por semana y hace una consulta simple a la base de datos. Su único
+  propósito es evitar que Supabase pause el proyecto por inactividad en su
+  plan gratuito; no cumple ninguna función de negocio.
