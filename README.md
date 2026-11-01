@@ -8,13 +8,13 @@ front como en el back.
 
 Proyecto evaluativo · Ingeniería Web · Universidad de Antioquia.
 
-**🔗 Demo en vivo:** [dpsolutions-gestiontareas.vercel.app](https://dpsolutions-gestiontareas.vercel.app/)
+**Demo en vivo:** [dpsolutions-gestiontareas.vercel.app](https://dpsolutions-gestiontareas.vercel.app/)
 
-## 👥 Integrantes
+## Integrantes
 
 - Jonathan Mazo González — DP Solutions
 
-## 🧩 Dominio elegido: Gestión de Tareas
+## Dominio elegido: Gestión de Tareas
 
 El enunciado pide un patrón genérico de **Maestros** (con saldo) y
 **Movimientos** (entradas/salidas). Para "Gestión de Tareas" ese patrón se
@@ -29,7 +29,7 @@ traduce así:
 - La gráfica de "evolución de saldos diarios" se convierte, de forma
   natural, en un **burndown chart** de tareas pendientes por proyecto.
 
-## 🔑 Credenciales de prueba
+## Credenciales de prueba
 
 Creadas por el script de seed (`npm run db:seed`):
 
@@ -38,10 +38,10 @@ Creadas por el script de seed (`npm run db:seed`):
 | ADMIN | `admin@dpsolutions.test`     | `Admin123!`  |
 | USER  | `usuario@dpsolutions.test`   | `Usuario123!`|
 
-> ⚠️ Credenciales de prueba para evaluación — en un sistema real nunca se
+> Credenciales de prueba para evaluación — en un sistema real nunca se
 > documentarían así.
 
-## 👤 Roles
+## Roles
 
 - **ADMIN**: acceso completo — gestiona usuarios (cambia roles), crea
   Maestros (Proyectos) y gestiona Transacciones.
@@ -50,7 +50,7 @@ Creadas por el script de seed (`npm run db:seed`):
   ocultando la UI como en cada ruta de API (`getSession()` + chequeo de rol),
   así que no basta con conocer la URL para saltarse la restricción.
 
-## ▶️ Cómo ejecutarlo localmente
+## Cómo ejecutarlo localmente
 
 1. Clonar el repositorio e instalar dependencias:
 
@@ -95,7 +95,7 @@ Creadas por el script de seed (`npm run db:seed`):
    > tiempo real y fallar con errores `EPERM` al renombrar archivos de
    > `.next/`. Si eso ocurre, usar `npx next dev --webpack` en su lugar.
 
-## 🗂️ Estructura del proyecto
+## Estructura del proyecto
 
 ```
 app/
@@ -123,7 +123,7 @@ prisma/
 proxy.ts                   # (antes "middleware.ts") redirección optimista si no hay sesión
 ```
 
-## 🔐 Cómo funciona la autenticación
+## Cómo funciona la autenticación
 
 1. **Login** (`/api/login`): compara la contraseña contra el hash bcrypt
    guardado, crea un registro en `Session` (token aleatorio + expiración a 3
@@ -138,13 +138,13 @@ proxy.ts                   # (antes "middleware.ts") redirección optimista si n
 4. **Logout** (`/api/logout`): borra la sesión de la base de datos y la
    cookie.
 
-## 🎨 Identidad visual
+## Identidad visual
 
 Color de marca: **indigo/violeta** (`oklch(0.511 0.262 276.966)` en modo
 claro), aplicado sobre el sistema de diseño de shadcn/Base UI que ya traía
 la base del proyecto. Logo: monograma "DP" (`components/logo.tsx`).
 
-## 📝 Notas de implementación
+## Notas de implementación
 
 - El esquema de Prisma original (`Product`, `Order`, `Customer`...) era un
   ejemplo de tienda que no aplicaba a este dominio — se reemplazó por
