@@ -8,7 +8,11 @@ export default defineConfig({
   migrations: {
     path: 'prisma/migrations',
   },
+  // Prisma 7: la config de migraciones/CLI vive aquí, no en schema.prisma.
+  // Usa la URL DIRECTA (sin pgbouncer) porque `migrate` necesita una conexión
+  // de sesión completa; el cliente en runtime (lib/prisma.ts) sigue usando
+  // la URL pooleada (DATABASE_URL) a través del adapter.
   datasource: {
-    url: process.env['DATABASE_URL'],
+    url: process.env['DIRECT_URL'],
   },
 });

@@ -1,173 +1,82 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { IconChecklist, IconClipboardList, IconUsers, IconLayoutDashboard } from '@tabler/icons-react';
 
-import { NavMain } from '@/components/nav-main';
-import { NavProjects } from '@/components/nav-projects';
+import { cn } from 'cn';
+import { Logo } from '@/components/logo';
 import { NavUser } from '@/components/nav-user';
-import { TeamSwitcher } from '@/components/team-switcher';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import {
-  IconLayoutRows,
-  IconWaveSine,
-  IconCommand,
-  IconTerminal2,
-  IconRobot,
-  IconBook,
-  IconSettings,
-  IconFrame,
-  IconChartPie,
-  IconMap,
-} from '@tabler/icons-react';
+import type { SessionUser } from '@/lib/session';
 
-// This is sample data.
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  teams: [
-    {
-      name: 'Acme Inc',
-      logo: <IconLayoutRows />,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: <IconWaveSine />,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: <IconCommand />,
-      plan: 'Free',
-    },
-  ],
-  navMain: [
-    {
-      title: 'Playground',
-      url: '#',
-      icon: <IconTerminal2 />,
-      isActive: true,
-      items: [
-        {
-          title: 'History',
-          url: '#',
-        },
-        {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Maestros',
-      url: '#',
-      icon: <IconRobot />,
-      items: [
-        {
-          title: 'Usuarios',
-          url: '/users',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Documentation',
-      url: '#',
-      icon: <IconBook />,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Settings',
-      url: '#',
-      icon: <IconSettings />,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: <IconFrame />,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: <IconChartPie />,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: <IconMap />,
-    },
-  ],
-};
+// Visibilidad por rol según el enunciado: Transacciones y Maestros para
+// ambos roles, Usuarios solo para ADMIN.
+const links = [
+  { title: 'Inicio', url: '/home', icon: IconLayoutDashboard, roles: ['ADMIN', 'USER'] as const },
+  { title: 'Transacciones', url: '/transacciones', icon: IconClipboardList, roles: ['ADMIN', 'USER'] as const },
+  { title: 'Maestros', url: '/maestros', icon: IconChecklist, roles: ['ADMIN', 'USER'] as const },
+  { title: 'Usuarios', url: '/users', icon: IconUsers, roles: ['ADMIN'] as const },
+];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ user }: { user: SessionUser }) {
+  const pathname = usePathname();
+  const visibleLinks = links.filter((link) => (link.roles as readonly string[]).includes(user.role));
+  const fullName = [user.name, user.lastName].filter(Boolean).join(' ');
+
   return (
-    <Sidebar collapsible='icon' {...props}>
+    <Sidebar collapsible='icon' className='bg-gradient-to-b from-primary/[0.07] via-sidebar to-chart-2/[0.06]'>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <Logo className='px-2 py-1.5' />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <SidebarGroup>
+          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {visibleLinks.map((link) => {
+                const isActive = pathname.startsWith(link.url);
+                return (
+                  <SidebarMenuItem key={link.url}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      tooltip={link.title}
+                      // Acento de marca: borde + ícono en indigo cuando el
+                      // link está activo, en vez de solo el resaltado gris
+                      // por defecto de shadcn.
+                      className={cn(
+                        'border-l-2 border-transparent',
+                        isActive && 'border-primary text-primary data-active:text-primary [&_svg]:text-primary'
+                      )}
+                      render={
+                        <Link href={link.url}>
+                          <link.icon />
+                          <span>{link.title}</span>
+                        </Link>
+                      }
+                    />
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{ name: fullName, email: user.email, avatar: user.image ?? '' }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -17,27 +15,11 @@ enum Enum_Role {
   USER
 }
 
-enum Enum_Order_Status {
-  PENDING
-  COMPLETED
-  PAID
-  DELIVERED
-  CANCELED
-  SHIPPED
-}
-
-enum Enum_PaymentMethod {
-  CREDIT_CARD
-  DEBIT_CARD
-  PAYPAL
-  CASH
-}
-
-enum Enum_PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
+// Tipo de movimiento sobre un Proyecto: ENTRADA = se agregan tareas nuevas
+// (sube el saldo de tareas pendientes), SALIDA = se completan tareas (baja el saldo).
+enum Enum_TipoMovimiento {
+  ENTRADA
+  SALIDA
 }
 
 model User {
@@ -46,111 +28,56 @@ model User {
   email     String    @unique
   lastName  String?
   password  String
+  image     String?
   deleted   Boolean   @default(false)
   enabled   Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   role      Enum_Role @default(USER)
-  profile   Profile?
+
+  sessions             Session[]
+  proyectosCreados     Proyecto[]   @relation("ProyectosCreadosPor")
+  movimientosEjecutados Movimiento[] @relation("MovimientosEjecutadosPor")
 }
 
-model Customer {
+// Sesión de autenticación: el token se guarda hasheado en la cookie httpOnly
+// del navegador y se valida contra este registro en cada request protegido.
+model Session {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String
-  address   String
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// "Maestro" del enunciado: un Proyecto de tareas. `saldo` = tareas pendientes.
+model Proyecto {
+  id        String   @id @default(cuid())
+  nombre    String
+  saldo     Int      @default(0)
   deleted   Boolean  @default(false)
-  enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  orders    Order[]
+
+  creador   User   @relation("ProyectosCreadosPor", fields: [creadorId], references: [id])
+  creadorId String
+
+  movimientos Movimiento[]
 }
 
-model Profile {
-  id        String   @id @default(cuid())
-  address   String
-  phone     String
-  image     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-}
+// "Movimiento"/Transacción del enunciado: un evento sobre las tareas de un
+// Proyecto (se agregan tareas nuevas, o se completan tareas existentes).
+model Movimiento {
+  id       String              @id @default(cuid())
+  fecha    DateTime            @default(now())
+  tipo     Enum_TipoMovimiento
+  cantidad Int
+  createdAt DateTime           @default(now())
 
-model Product {
-  id          String      @id @default(cuid())
-  name        String
-  description String
-  price       Float
-  cantidad    Int
-  codigo      Int
-  deleted     Boolean     @default(false)
-  enabled     Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  categories  Category[]
-  suppliers   Supplier[]
-  orderItems  OrderItem[]
-}
+  proyecto   Proyecto @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  proyectoId String
 
-model Category {
-  id          String    @id @default(cuid())
-  name        String
-  description String
-  deleted     Boolean   @default(false)
-  enabled     Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-}
-
-model Supplier {
-  id          String    @id @default(cuid())
-  name        String
-  description String
-  deleted     Boolean   @default(false)
-  enabled     Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-}
-
-model Order {
-  id             String            @id @default(cuid())
-  orderDate      DateTime          @default(now())
-  subTotalAmount Float
-  taxAmount      Float
-  totalAmount    Float
-  status         Enum_Order_Status
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  customer       Customer          @relation(fields: [customerId], references: [id])
-  customerId     String
-  orderItems     OrderItem[]
-  payment        Payment?
-}
-
-model OrderItem {
-  id        String   @id @default(cuid())
-  quantity  Int
-  price     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
-}
-
-model Payment {
-  id          String             @id @default(cuid())
-  paymentDate DateTime           @default(now())
-  amount      Float
-  method      Enum_PaymentMethod
-  status      Enum_PaymentStatus @default(PENDING)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  oderId      String             @unique
-  order       Order              @relation(fields: [oderId], references: [id])
+  responsable   User   @relation("MovimientosEjecutadosPor", fields: [responsableId], references: [id])
+  responsableId String
 }

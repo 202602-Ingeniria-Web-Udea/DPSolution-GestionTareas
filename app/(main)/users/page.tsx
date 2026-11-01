@@ -1,41 +1,25 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { TableActions } from '@/components/users/table';
-import { DialogDemo } from '@/components/users/dialog';
+import { UsersTable } from '@/components/users/table';
+import { requireAdmin } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-type users = {
-  id: string;
-  name: string;
-  lastName: string;
-  email: string;
-  enabled: boolean;
-  deleted: boolean;
-  role: 'ADMIN' | 'USER';
-  createdAt: Date;
-};
+export default async function UsersPage() {
+  // Protección server-side real: si un USER intenta entrar directamente a
+  // /users, se le redirige — no basta con ocultar el link en el sidebar.
+  await requireAdmin();
 
-async function getUsers(): Promise<users[]> {
-  const response = await fetch('http://localhost:3000/api/users');
-  const data = await response.json();
-  return data.users;
-}
-
-export default async function Users() {
-  const Data = await getUsers();
+  const users = await prisma.user.findMany({
+    where: { deleted: false },
+    select: { id: true, email: true, role: true, createdAt: true },
+    orderBy: { createdAt: 'desc' },
+  });
 
   return (
-    <div>
-      <div className='flex flex-row justify-around items-center'>
-        <div>
-          <h1 className='text-5xl font-bold'>MAESTRO DE USUARIOS</h1>
-        </div>
-        <div>
-          <DialogDemo />
-        </div>
-      </div>
+    <div className='flex flex-1 flex-col gap-4'>
       <div>
-        <TableActions users={Data} />
+        <h1 className='text-2xl font-bold'>Usuarios</h1>
+        <p className='text-muted-foreground'>Administra los roles de las personas con acceso al sistema.</p>
       </div>
+      <UsersTable users={users} />
     </div>
   );
 }
