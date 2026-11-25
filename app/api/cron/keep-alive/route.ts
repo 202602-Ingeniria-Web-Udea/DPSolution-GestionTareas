@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Llamado semanalmente por un Cron Job de Vercel (ver vercel.json) para
+// Llamado diariamente por un Cron Job de Vercel (ver vercel.json) para
 // mantener activo el proyecto de Supabase, cuyo plan gratuito pausa la
-// base de datos tras un período de inactividad.
+// base de datos tras un período de inactividad. También se llama desde
+// el proyecto ai-expert-chat-programacion, que comparte esta misma base
+// de datos en un esquema aparte, como respaldo redundante.
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET;
   if (secret) {
